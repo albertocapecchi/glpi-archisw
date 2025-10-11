@@ -24,6 +24,13 @@
  --------------------------------------------------------------------------
  */
 
+define('PLUGIN_ARCHISW_VERSION', '3.0.23');
+
+// Minimal GLPI version, inclusive
+define('PLUGIN_ARCHISW_MIN_GLPI', '10.0.0');
+// Maximum GLPI version, exclusive
+define('PLUGIN_ARCHISW_MAX_GLPI', '11.0.99');
+
 // Init the hooks of the plugins -Needed
 function plugin_init_archisw() {
    global $PLUGIN_HOOKS, $CFG_GLPI, $DB;
@@ -55,7 +62,7 @@ function plugin_init_archisw() {
    $plugin = new Plugin();
    if ($plugin->isActivated('genericobject')) {
       $query = "SELECT itemtype FROM `glpi_plugin_genericobject_types` WHERE `is_active` = TRUE";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       $rowcount = $DB->numrows($result);
       if ($rowcount > 0) {
          while ($data = $DB->fetchAssoc($result)) {
@@ -134,14 +141,15 @@ function plugin_version_archisw() {
 
    return array (
       'name' => _n('Apps structure', 'Apps structures', 2, 'archisw'),
-      'version' => '3.0.22',
+      'version' => PLUGIN_ARCHISW_VERSION,
       'author'  => "Eric Feron",
       'license' => 'GPLv2+',
       'homepage'=> 'https://github.com/ericferon/glpi-archisw',
       'requirements' => [
          'glpi' => [
-            'min' => '10.0',
-            'dev' => false
+            'min' => PLUGIN_ARCHISW_MIN_GLPI,
+            'max' => PLUGIN_ARCHISW_MAX_GLPI,
+//            'dev' => false
          ]
       ]
    );
@@ -151,22 +159,14 @@ function plugin_version_archisw() {
 // Optional : check prerequisites before install : may print errors or add to message after redirect
 function plugin_archisw_check_prerequisites() {
    global $DB;
-   if (version_compare(GLPI_VERSION, '10.0', 'lt')
-       || version_compare(GLPI_VERSION, '10.1', 'ge')) {
-      if (method_exists('Plugin', 'messageIncompatible')) {
-         echo Plugin::messageIncompatible('core', '10.0');
-      }
-      return false;
-   } else {
 		$query = "select * from glpi_plugins where directory = 'statecheck' and state = 1";
-		$result_query = $DB->query($query);
+		$result_query = $DB->doQuery($query);
 		if($DB->numRows($result_query) == 1) {
 			return true;
 		} else {
 			echo "the plugin 'statecheck' must be installed before using 'Apps structure (archisw)'";
 			return false;
 		}
-	}
 }
 
 // Uninstall process for plugin : need to return true if succeeded : may display messages or add to message after redirect
@@ -174,11 +174,11 @@ function plugin_archisw_check_config() {
    return true;
 }
 
-function plugin_datainjection_migratetypes_archisw($types) {
+/*function plugin_datainjection_migratetypes_archisw($types) {
    $types[2400] = 'PluginArchiswSwcomponent';
    return $types;
 }
-
+*/
 // Uninstall process for plugin : need to return true if succeeded : may display messages or add to message after redirect
 function hook_pre_item_add_archisw_configsw(CommonDBTM $item) {
    global $DB;
@@ -190,7 +190,7 @@ function hook_pre_item_add_archisw_configsw(CommonDBTM $item) {
       if($item->fields['plugin_archisw_configswdatatypes_id'] == 6) {// if dropdown, add key
          $query .= ", ADD KEY IF NOT EXISTS $fieldname ($fieldname)";
       }
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       return true;
    }
    return false;
@@ -210,7 +210,7 @@ function hook_pre_item_update_archisw_configsw(CommonDBTM $item) {
       if($item->input['plugin_archisw_configswdatatypes_id'] == 6) {// if dropdown, add key
          $query .= ", ADD KEY IF NOT EXISTS $newfieldname ($newfieldname)";
       }
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       return true;
    }
    return false;
@@ -221,10 +221,10 @@ function hook_pre_item_purge_archisw_configsw(CommonDBTM $item) {
    $oldfieldname = $item->fields['name'];
    // suppress in glpi_plugin_archisw_labeltranslations
    $query = "DELETE FROM `glpi_plugin_archisw_labeltranslations` WHERE `items_id` = '".$oldid."'";
-   $result = $DB->query($query);
+   $result = $DB->doQuery($query);
    // suppress column
    $query = "ALTER TABLE `glpi_plugin_archisw_swcomponents` DROP COLUMN IF EXISTS $oldfieldname";
-   $result = $DB->query($query);
+   $result = $DB->doQuery($query);
    return true;
 }
 ?>

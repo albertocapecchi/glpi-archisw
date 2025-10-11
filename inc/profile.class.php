@@ -188,7 +188,7 @@ class PluginArchiswProfile extends Profile {
    * Migration rights from old system to the new one for one profile
    * @param $profiles_id the profile ID
    */
-   static function migrateOneProfile($profiles_id) {
+/*   static function migrateOneProfile($profiles_id) {
       global $DB;
       //Cannot launch migration if there's nothing to migrate...
       if (!$DB->TableExists('glpi_plugin_archisw_profiles')) {
@@ -206,12 +206,12 @@ class PluginArchiswProfile extends Profile {
                $query = "UPDATE `glpi_profilerights`
                          SET `rights`='".self::translateARight($profile_data[$old])."'
                          WHERE `name`='$new' AND `profiles_id`='$profiles_id'";
-               $DB->query($query);
+               $DB->doQuery($query);
             }
          }
       }
    }
-
+*/
    /**
    * Initialize profiles, and migrate it necessary
    */
@@ -230,7 +230,7 @@ class PluginArchiswProfile extends Profile {
       }
 
       //Migration old rights in new ones
-      foreach ($DB->request("SELECT `id` FROM `glpi_profiles`") as $prof) {
+/*      foreach ($DB->request("SELECT `id` FROM `glpi_profiles`") as $prof) {
          self::migrateOneProfile($prof['id']);
       }
       foreach ($DB->request("SELECT *
@@ -239,7 +239,7 @@ class PluginArchiswProfile extends Profile {
                               AND `name` LIKE '%plugin_archisw%'") as $prof) {
          $_SESSION['glpiactiveprofile'][$prof['name']] = $prof['rights'];
       }
-   }
+*/   }
 
 
    static function removeRightsFromSession() {

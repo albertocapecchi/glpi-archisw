@@ -26,19 +26,18 @@
 
 function plugin_archisw_install() {
    global $DB;
-
    include_once (Plugin::getPhpDir("archisw")."/inc/profile.class.php");
 
    $update=false;
    if (!$DB->TableExists("glpi_plugin_archisw_swcomponents")) {
-		$DB->runFile(Plugin::getPhpDir("archisw")."/sql/empty-3.0.3.sql");
+		$DB->runFile(Plugin::getPhpDir("archisw")."/sql/empty-3.0.4.sql");
    }
    else if ($DB->TableExists("glpi_plugin_archisw_swcomponenttypes") && !$DB->FieldExists("glpi_plugin_archisw_swcomponenttypes","plugin_archisw_swcomponenttypes_id")) {
       $update=true;
       $DB->runFile(Plugin::getPhpDir("archisw")."/sql/update-1.0.1.sql");
    }
 
-   if ($DB->numrows($DB->query("SELECT * from glpi_plugin_archisw_swcomponents_itemroles where itemtype = 'PluginArchiswSwcomponent'")) == 0) {
+   if ($DB->numrows($DB->doQuery("SELECT * from glpi_plugin_archisw_swcomponents_itemroles where itemtype = 'PluginArchiswSwcomponent'")) == 0) {
       $DB->runFile(Plugin::getPhpDir("archisw")."/sql/update-1.0.2.sql");
    }
 
@@ -63,12 +62,12 @@ function plugin_archisw_install() {
       $DB->runFile(Plugin::getPhpDir("archisw")."/sql/update-3.0.1.sql");
    }
 
-   if ($DB->numrows($DB->query("SELECT * from glpi_plugin_archisw_configswhaligns where id = '7'")) == 0) {
+   if ($DB->numrows($DB->doQuery("SELECT * from glpi_plugin_archisw_configswhaligns where id = '7'")) == 0) {
       $DB->runFile(Plugin::getPhpDir("archisw")."/sql/update-3.0.2.sql");
    }
 
    if (!$DB->TableExists("glpi_plugin_archisw_labeltranslations")) {
-      $DB->runFile(Plugin::getPhpDir("archisw")."/sql/update-3.0.3.sql");
+      $DB->runFile(Plugin::getPhpDir("archisw")."/sql/update-3.0.4.sql");
    }
 
    // regenerate configured fields
@@ -77,7 +76,7 @@ function plugin_archisw_install() {
                FROM `glpi_plugin_archisw_configswlinks` 
                JOIN `glpi_plugin_archisw_configsws`  ON `glpi_plugin_archisw_configswlinks`.`id` = `glpi_plugin_archisw_configsws`.`plugin_archisw_configswlinks_id` 
                WHERE `glpi_plugin_archisw_configswlinks`.`name` like 'PluginArchisw%'";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       $item = new CommonDBTM;
       while ($data = $DB->fetchAssoc($result)) {
          $item->input['name'] = $data['classname'];
@@ -106,25 +105,25 @@ function plugin_archisw_uninstall() {
    include_once (Plugin::getPhpDir("archisw")."/inc/menu.class.php");
    
    $query = "SELECT `id` FROM `glpi_plugin_statecheck_tables` WHERE `name` = 'glpi_plugin_archisw_configsws'";
-   $result = $DB->query($query);
+   $result = $DB->doQuery($query);
    $rowcount = $DB->numrows($result);
    if ($rowcount > 0) {
       while ($data = $DB->fetchAssoc($result)) {
          $tableid = $data['id'];
          $rulequery = "SELECT `id` FROM `glpi_plugin_statecheck_rules` WHERE `plugin_statecheck_tables_id` = '".$tableid."'";
-         $ruleresult = $DB->query($rulequery);
+         $ruleresult = $DB->doQuery($rulequery);
          while ($ruledata = $DB->fetchAssoc($ruleresult)) {
             $ruleid = $ruledata['id'];
             $query = "DELETE FROM `glpi_plugin_statecheck_ruleactions` WHERE `plugin_statecheck_rules_id` = '".$ruleid."'";
-            $DB->query($query);
+            $DB->doQuery($query);
             $query = "DELETE FROM `glpi_plugin_statecheck_rulecriterias` WHERE `plugin_statecheck_rules_id` = '".$ruleid."'";
-            $DB->query($query);
+            $DB->doQuery($query);
          }
          $query = "DELETE FROM `glpi_plugin_statecheck_rules` WHERE `plugin_statecheck_tables_id` = '".$tableid."'";
-         $DB->query($query);
+         $DB->doQuery($query);
       }
       $query = "DELETE FROM `glpi_plugin_statecheck_tables` WHERE `name` like 'glpi_plugin_archisw_%'";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
    }
 
    $tables = ["glpi_plugin_archisw_swcomponents",
@@ -139,7 +138,7 @@ function plugin_archisw_uninstall() {
 					"glpi_plugin_archisw_profiles"];
 
    $query = "SELECT `name` FROM `glpi_plugin_archisw_configswlinks` WHERE `name` like 'PluginArchisw%' AND (`as_view_on` IS NULL OR `as_view_on` = '')";
-   $result = $DB->query($query);
+   $result = $DB->doQuery($query);
    while ($data = $DB->fetchAssoc($result)) {
       $tablename = CommonDBTM::getTable($data['name']);
       if (!in_array($tablename,$tables))
@@ -147,11 +146,11 @@ function plugin_archisw_uninstall() {
    }
 
    foreach($tables as $table)
-      $DB->query("DROP TABLE IF EXISTS `$table`;");
+      $DB->doQuery("DROP TABLE IF EXISTS `$table`;");
 
    $views = [];
    $query = "SELECT `name` FROM `glpi_plugin_archisw_configswlinks` WHERE `name` LIKE 'PluginArchisw%' AND (`as_view_on` IS NOT NULL AND `as_view_on` <> '')";
-   $result = $DB->query($query);
+   $result = $DB->doQuery($query);
    while ($data = $DB->fetchAssoc($result)) {
       $tablename = CommonDBTM::getTable($data['name']);
       if (!in_array($tablename,$tables))
@@ -159,7 +158,7 @@ function plugin_archisw_uninstall() {
    }
 				
 	foreach($views as $view)
-		$DB->query("DROP VIEW IF EXISTS `$view`;");
+		$DB->doQuery("DROP VIEW IF EXISTS `$view`;");
 
 	$tables_glpi = ["glpi_displaypreferences",
                "glpi_documents_items",
@@ -171,9 +170,9 @@ function plugin_archisw_uninstall() {
                "glpi_impactitems"];
 
    foreach($tables_glpi as $table_glpi)
-      $DB->query("DELETE FROM `$table_glpi` WHERE `itemtype` LIKE 'PluginArchisw%' ;");
+      $DB->doQuery("DELETE FROM `$table_glpi` WHERE `itemtype` LIKE 'PluginArchisw%' ;");
 
-   $DB->query("DELETE
+   $DB->doQuery("DELETE
                   FROM `glpi_impactrelations`
                   WHERE `itemtype_source` IN ('PluginArchiswSwcomponent')
                     OR `itemtype_impacted` IN ('PluginArchiswSwcomponent')");
@@ -229,7 +228,7 @@ function plugin_archisw_getSwcomponentRelations() {
 					 ];
 
       $query = "SELECT `name` FROM `glpi_plugin_archisw_configswlinks` WHERE `name` like 'PluginArchisw%'";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       while ($data = $DB->fetchAssoc($result)) {
          $tablename = CommonDBTM::getTable($data['name']);
          if (!in_array($tablename,$tables)) {
@@ -264,7 +263,7 @@ function plugin_archisw_getDropdown() {
                FROM `glpi_plugin_archisw_configswlinks` 
                JOIN `glpi_plugin_archisw_configsws`  ON `glpi_plugin_archisw_configswlinks`.`id` = `glpi_plugin_archisw_configsws`.`plugin_archisw_configswlinks_id` 
                WHERE `glpi_plugin_archisw_configswlinks`.`name` like 'PluginArchisw%' AND (`glpi_plugin_archisw_configswlinks`.`as_view_on` IS NULL OR `glpi_plugin_archisw_configswlinks`.`as_view_on` = '')";
-         $result = $DB->query($query);
+         $result = $DB->doQuery($query);
          while ($data = $DB->fetchAssoc($result)) {
             $classname = $data['classname'];
             if (!in_array($classname,$classes))
@@ -328,7 +327,7 @@ function plugin_archisw_giveItem($type,$ID,$data,$num) {
                      FROM `glpi_plugin_archisw_swcomponents_items`
                      WHERE `plugin_archisw_swcomponents_id` = '" . $data['id'] . "'
                      ORDER BY `itemtype`";
-         $result_device = $DB->query($query_device);
+         $result_device = $DB->doQuery($query_device);
          $number_device = $DB->numrows($result_device);
 
          $out       = '';
@@ -358,7 +357,7 @@ function plugin_archisw_giveItem($type,$ID,$data,$num) {
                   }
                   $query .= " ORDER BY `entities`.`completename`, `" . $table_item . "`.`$column`";
 
-                  if ($result_linked = $DB->query($query))
+                  if ($result_linked = $DB->doQuery($query))
                      if ($DB->numrows($result_linked)) {
                         $item = new $itemtype();
                         while ($data = $DB->fetchAssoc($result_linked)) {
@@ -487,29 +486,29 @@ function hook_pre_item_add_archisw_configswlink(CommonDBTM $item) {
             $query = "CREATE VIEW `$tablename` (`id`,$entities `name`, `comment`, `completename`, `level`, `is_recursive`) AS 
                   SELECT `id`,$entities `name`, `comment`, `completename`, `level`, `is_recursive` FROM $newasviewon".(empty($newviewlimit)?"":" WHERE $newviewlimit");
          }
-         $result = $DB->query($query);
+         $result = $DB->doQuery($query);
       }
       else {
-         $entities = ($newisentitylimited?"`entities_id` INT(11) UNSIGNED NOT NULL DEFAULT 0,":"");
+         $entities = ($newisentitylimited?"`entities_id` INT UNSIGNED NOT NULL DEFAULT 0,":"");
          if (!$newistreedropdown) { //dropdown->create table
             $query = "CREATE TABLE IF NOT EXISTS `".$tablename."` (
-                  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,".
+                  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,".
                   $entities.
                   "`name` VARCHAR(45) NOT NULL,
                   `comment` VARCHAR(255) NULL,
                   `completename` MEDIUMTEXT NULL,
                   PRIMARY KEY (`id`) ,
                   UNIQUE INDEX `".$tablename."_name` (`name`) )
-                  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-            $result = $DB->query($query);
+                  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+            $result = $DB->doQuery($query);
          }
          else { //treedropdown->create table
             $query = "CREATE TABLE IF NOT EXISTS `".$tablename."` (
-                        `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,".
+                        `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,".
                         $entities.
                         "`is_recursive` BIT NOT NULL DEFAULT 0,
                         `name` VARCHAR(45) NOT NULL,
-                        $fieldname INT(11) UNSIGNED NOT NULL DEFAULT 0,
+                        $fieldname INT UNSIGNED NOT NULL DEFAULT 0,
                         `completename` MEDIUMTEXT NULL,
                         `comment` VARCHAR(255) NULL,
                         `level` INT NOT NULL DEFAULT 0,
@@ -517,8 +516,8 @@ function hook_pre_item_add_archisw_configswlink(CommonDBTM $item) {
                         `ancestors_cache` LONGTEXT NULL,
                         PRIMARY KEY (`id`) ,
                         UNIQUE INDEX `".$tablename."_name` (`name`) )
-                        DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
-            $result = $DB->query($query);
+                        DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
+            $result = $DB->doQuery($query);
          }
       }
       create_plugin_archisw_classfiles($dir, $newclassname, $newistreedropdown);
@@ -549,9 +548,9 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
             $oldtablename = 'glpi_plugin_archisw_'.getPlural($oldrootname);
             $oldfieldname = 'plugin_archisw_'.getPlural($oldrootname).'_id';
             $query = "RENAME TABLE `".$oldtablename."` TO `".$newtablename."`";
-            $result = $DB->query($query);
+            $result = $DB->doQuery($query);
             $query = "UPDATE `glpi_plugin_archisw_configswlinks` SET `name` = '".$newclassname."' WHERE `name` = '".$oldclassname."'";
-            $result = $DB->query($query);
+            $result = $DB->doQuery($query);
          }
          else {// no change dropdown name
             // if dropdown table is a view, replace the old view
@@ -567,7 +566,7 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
                   $query = "CREATE OR REPLACE VIEW `$newtablename` (`id`,$entities `name`, `comment`, `completename`, `level`, `is_recursive`) AS 
                         SELECT `id`,$entities `name`, `comment`, `completename`, `level`, `is_recursive` FROM $newasviewon".(empty($newviewlimit)?"":" WHERE $newviewlimit");
                }
-               $result = $DB->query($query);
+               $result = $DB->doQuery($query);
             }
             else {
                // if dropdown table is really a table ...
@@ -576,11 +575,11 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
                // old type was dropdown and new one is treedropdown=>add the needed fields
                   $query = "ALTER TABLE $newtablename
                      ADD COLUMN `is_recursive` BIT NOT NULL DEFAULT 0 AFTER `id`,
-                     ADD COLUMN $newfieldname INT(11) UNSIGNED NOT NULL DEFAULT 0 AFTER `name`,
+                     ADD COLUMN $newfieldname INT UNSIGNED NOT NULL DEFAULT 0 AFTER `name`,
                      ADD COLUMN `level` INT NOT NULL DEFAULT 0 AFTER `completename`,
                      ADD COLUMN `sons_cache` LONGTEXT NULL AFTER `level`,
                      ADD COLUMN `ancestors_cache` LONGTEXT NULL AFTER `sons_cache`";
-                  $result = $DB->query($query);
+                  $result = $DB->doQuery($query);
                }
                else if ($oldistreedropdown && !$newistreedropdown) {
                // old type was treedropdown and new one is dropdown=>drop the unneeded fields
@@ -590,18 +589,18 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
                      DROP COLUMN `level`,
                      DROP COLUMN `sons_cache`,
                      DROP COLUMN `ancestors_cache`";
-                  $result = $DB->query($query);
+                  $result = $DB->doQuery($query);
                }
                // 'is_entity_limited' has changed
                if (!$item->fields['is_entity_limited'] && $item->input['is_entity_limited']) { // 'is_entity_limited' changed from no to yes
                // => add 'entities_id' column to dropdown table
-                  $query = "ALTER TABLE $newtablename ADD COLUMN IF NOT EXISTS `entities_id` INT(11) UNSIGNED NOT NULL DEFAULT 0 AFTER `id`";
-                  $result = $DB->query($query);
+                  $query = "ALTER TABLE $newtablename ADD COLUMN IF NOT EXISTS `entities_id` INT UNSIGNED NOT NULL DEFAULT 0 AFTER `id`";
+                  $result = $DB->doQuery($query);
                }
                else if ($item->fields['is_entity_limited'] && !$item->input['is_entity_limited']) { // 'is_entity_limited' changed from yes to no
                // => drop 'entities_id' column from dropdown table
                   $query = "ALTER TABLE $newtablename DROP COLUMN `entities_id`";
-                  $result = $DB->query($query);
+                  $result = $DB->doQuery($query);
                }
             }
          }
@@ -620,29 +619,29 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
                $query = "CREATE VIEW `$tablename` (`id`,$entities `name`, `comment`, `completename`, `level`, `is_recursive`) AS 
                   SELECT `id`,$entities `name`, `comment`, `completename`, `level`, `is_recursive` FROM $newasviewon".(empty($newviewlimit)?"":" WHERE $newviewlimit");
             }
-            $result = $DB->query($query);
+            $result = $DB->doQuery($query);
          }
          else {
-            $entities = ($item->input['is_entity_limited']?"`entities_id` INT(11) UNSIGNED NOT NULL DEFAULT 0,":""); // with or without 'entities_id' column
+            $entities = ($item->input['is_entity_limited']?"`entities_id` INT UNSIGNED NOT NULL DEFAULT 0,":""); // with or without 'entities_id' column
             if (!$newistreedropdown) {
                // new simple dropdown table
                $query = "CREATE TABLE IF NOT EXISTS `".$newtablename."` (
-                  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,".
+                  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,".
                   $entities.
                   "`name` VARCHAR(45) NOT NULL,
                   `comment` VARCHAR(255) NULL,
                   `completename` MEDIUMTEXT NULL,
                   PRIMARY KEY (`id`) ,
                   UNIQUE INDEX `".$newtablename."_name` (`name`) )
-                  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
             } 
             else { // new treedropdon table
                $query = "CREATE TABLE IF NOT EXISTS `".$newtablename."` (
-                  `id` INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,".
+                  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,".
                   $entities.
                   "`is_recursive` BIT NOT NULL DEFAULT 0,
                   `name` VARCHAR(45) NOT NULL,
-                  $newfieldname INT(11) UNSIGNED NOT NULL DEFAULT 0,
+                  $newfieldname INT UNSIGNED NOT NULL DEFAULT 0,
                   `completename` MEDIUMTEXT NULL,
                   `comment` VARCHAR(255) NULL,
                   `level` INT NOT NULL DEFAULT 0,
@@ -650,9 +649,9 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
                   `ancestors_cache` LONGTEXT NULL,
                   PRIMARY KEY (`id`) ,
                   UNIQUE INDEX `".$newtablename."_name` (`name`) )
-                  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+                  DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci";
             }
-            $result = $DB->query($query);
+            $result = $DB->doQuery($query);
          }
       }
       create_plugin_archisw_classfiles($dir, $newclassname, $newistreedropdown);
@@ -666,9 +665,9 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
       $oldfieldname = 'plugin_archisw_'.getPlural($oldrootname).'_id';
       $tableorview = empty($oldasviewon)?"TABLE":"VIEW";
       $query = "DROP $tableorview IF EXISTS `".$oldtablename."`";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       $query = "DELETE FROM `glpi_plugin_archisw_configswlinks` WHERE `name` = '".$oldclassname."'";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       // delete files in inc and front directories
       if (file_exists($dir.'/inc/'.$oldfilename.'.class.php')) 
          unlink($dir.'/inc/'.$oldfilename.'.class.php');
@@ -688,13 +687,13 @@ function hook_pre_item_purge_archisw_configswlink(CommonDBTM $item) {
    $oldid = $item->fields['id'];
    // suppress in glpi_plugin_archisw_configsws
    $query = "UPDATE `glpi_plugin_archisw_configsws` SET `plugin_archisw_configswlinks_id` = 0 WHERE `plugin_archisw_configswlinks_id` = '".$oldid."'";
-   $result = $DB->query($query);
+   $result = $DB->doQuery($query);
    if (substr($oldclassname, 0, 13) == 'PluginArchisw') {
       $oldtablename = 'glpi_plugin_archisw_'.getPlural($oldrootname);
       $oldfieldname = 'plugin_archisw_'.getPlural($oldrootname).'_id';
       $tableorview = empty($oldasviewon)?"TABLE":"VIEW";
       $query = "DROP $tableorview IF EXISTS `".$oldtablename."`";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       // delete files in inc and front directories
       if (file_exists($dir.'/inc/'.$oldfilename.'.class.php')) 
          unlink($dir.'/inc/'.$oldfilename.'.class.php');

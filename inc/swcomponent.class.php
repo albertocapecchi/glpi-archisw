@@ -125,7 +125,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
 
       $linktable = [];
       $tablequery = "SELECT * FROM `glpi_plugin_archisw_configswlinks`";
-      $tableresult = $DB->query($tablequery);
+      $tableresult = $DB->doQuery($tablequery);
       while ($tabledata = $DB->fetchAssoc($tableresult)) {
          $linktable[$tabledata['id']]['name'] = $tabledata['name'];
          $linktable[$tabledata['id']]['has_dropdown'] = $tabledata['has_dropdown'];
@@ -134,7 +134,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
 
       $datatypetable = [];
       $datatypequery = "SELECT * FROM `glpi_plugin_archisw_configswdatatypes`";
-      $datatyperesult = $DB->query($datatypequery);
+      $datatyperesult = $DB->doQuery($datatypequery);
       while ($datatypedata = $DB->fetchAssoc($datatyperesult)) {
          $datatypetable[$datatypedata['id']]['name'] = $datatypedata['name'];
       }
@@ -143,7 +143,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
                 FROM `glpi_plugin_archisw_configsws` 
                 WHERE `is_deleted` = 0 
                 ORDER BY `id`";
-      $fieldresult = $DB->query($fieldquery);
+      $fieldresult = $DB->doQuery($fieldquery);
       $rowcount = $DB->numrows($fieldresult);
       $tabid = 1; // tabid 1 is used for name
       $tabtable = $this->getTable();
@@ -358,7 +358,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
 
       $linktable = [];
       $tablequery = "SELECT * FROM `glpi_plugin_archisw_configswlinks`";
-      $tableresult = $DB->query($tablequery);
+      $tableresult = $DB->doQuery($tablequery);
       while ($tabledata = $DB->fetchAssoc($tableresult)) {
          $linktable[$tabledata['id']]['name'] = $tabledata['name'];
          $linktable[$tabledata['id']]['has_dropdown'] = $tabledata['has_dropdown'];
@@ -369,7 +369,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
                 FROM `glpi_plugin_archisw_configsws` 
                 WHERE `is_deleted` = 0 AND `plugin_archisw_configswfieldgroups_id` = 0 
                 ORDER BY `row`, `plugin_archisw_configswhaligns_id`";
-      $fieldresult = $DB->query($fieldquery);
+      $fieldresult = $DB->doQuery($fieldquery);
       $rowcount = $DB->numrows($fieldresult);
       if ($rowcount > 0) {
          $fgroupname = '';
@@ -476,7 +476,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
       $fgroupquery = "SELECT * 
                 FROM `glpi_plugin_archisw_configswfieldgroups` 
                 ORDER BY `sortorder`";
-      $fgroupresult = $DB->query($fgroupquery);
+      $fgroupresult = $DB->doQuery($fgroupquery);
 
       while ($fgroupdata = $DB->fetchAssoc($fgroupresult)) {
          $fgroupid = $fgroupdata['id'];
@@ -488,7 +488,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
                 FROM `glpi_plugin_archisw_configsws` 
                 WHERE `is_deleted` = 0 AND `plugin_archisw_configswfieldgroups_id` = $fgroupid 
                 ORDER BY `row`, `plugin_archisw_configswhaligns_id`";
-         $fieldresult = $DB->query($fieldquery);
+         $fieldresult = $DB->doQuery($fieldquery);
          $rowcount = $DB->numrows($fieldresult);
          if ($rowcount > 0) {
             // Accordion separator
@@ -721,7 +721,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
                                FROM `glpi_plugin_archisw_swcomponents`
                              $where)
                 ORDER BY `name`";
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
 
       $values = [0 => Dropdown::EMPTY_VALUE];
 
@@ -753,7 +753,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
       $query = "SELECT `id`,`name`
                 FROM `glpi_plugin_archisw_swcomponents_itemroles`
                 WHERE `itemtype` = '".(isset($_GET['_itemtype'])?$_GET['_itemtype']:$itemtype)."'" ;
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
 
       $values = [0 => Dropdown::EMPTY_VALUE];
 
@@ -829,7 +829,7 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
         . getEntitiesRestrictRequest(" AND ","glpi_plugin_archisw_swcomponents",'','',$this->maybeRecursive());
       $query.= " ORDER BY `glpi_plugin_archisw_swcomponents`.`name` ";
 
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       $number = $DB->numrows($result);
 
       if (Session::isMultiEntitiesMode()) {

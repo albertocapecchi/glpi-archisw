@@ -153,7 +153,7 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
          "WHERE `plugin_archisw_swcomponents_id` = '" . $plugin_archisw_swcomponents_id . "'
          AND `itemtype` = '" . $items_id . "'
          AND `items_id` = '" . $itemtype . "'";
-      if ($result = $DB->query($query)) {
+      if ($result = $DB->doQuery($query)) {
          if ($DB->numrows($result) != 1) {
             return false;
          }
@@ -215,7 +215,7 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
              ORDER BY `itemtype`
              LIMIT ".count(PluginArchiswSwcomponent::getTypes(true));
 
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       $number = $DB->numrows($result);
 
       if (Session::isMultiEntitiesMode()) {
@@ -336,7 +336,7 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
                   $query.=" ORDER BY `glpi_entities`.`completename`, `".$itemTable."`.`$column` ";
                }
 
-            if ($result_linked=$DB->query($query)) {
+            if ($result_linked=$DB->doQuery($query)) {
                if ($DB->numrows($result_linked)) {
 
                   Session::initNavigateListItems($itemType,PluginArchiswSwcomponent::getTypeName(2)." = ".$swcomponent->fields['name']);
@@ -472,7 +472,7 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
 
       $query.= " ORDER BY `glpi_plugin_archisw_swcomponents`.`name` ";
 
-      $result = $DB->query($query);
+      $result = $DB->doQuery($query);
       $number = $DB->numrows($result);
       $i      = 0;
 
@@ -506,7 +506,7 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
                WHERE `is_deleted` = '0'
                $limit";
 
-         $result = $DB->query($q);
+         $result = $DB->doQuery($q);
          $nb     = $DB->result($result,0,0);
 
          echo "<div class='firstbloc'>";
@@ -628,7 +628,7 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
       echo "</div>";
    }
 
-   public function canCreateItem()
+/*   public function canCreateItem()
    {
       return $this->canRelationItem(
          'canUpdateItem',
@@ -637,6 +637,6 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
          static::$checkAlwaysBothItems
       );
    }
-}
+*/}
 
 ?>
