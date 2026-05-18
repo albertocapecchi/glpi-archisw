@@ -31,7 +31,13 @@ define('PLUGIN_ARCHISW_MIN_GLPI', '10.0.0');
 // Maximum GLPI version, exclusive
 define('PLUGIN_ARCHISW_MAX_GLPI', '11.0.99');
 
-// Init the hooks of the plugins -Needed
+/**
+ * Initialise the Archisw plugin hooks, registrations, and profile hooks.
+ *
+ * Called by GLPI on every page load when the plugin is active.
+ *
+ * @return void
+ */
 function plugin_init_archisw() {
    global $PLUGIN_HOOKS, $CFG_GLPI, $DB;
 
@@ -136,7 +142,11 @@ function plugin_init_archisw() {
    }
 }
 
-// Get the name and the version of the plugin - Needed
+/**
+ * Return the plugin metadata (name, version, author, licence, requirements).
+ *
+ * @return array Plugin metadata keyed by GLPI-expected fields.
+ */
 function plugin_version_archisw() {
 
    return array (
@@ -156,7 +166,13 @@ function plugin_version_archisw() {
 
 }
 
-// Optional : check prerequisites before install : may print errors or add to message after redirect
+/**
+ * Check that the required prerequisites (statecheck plugin) are met before installation.
+ *
+ * Prints an error message when the prerequisite is not satisfied.
+ *
+ * @return bool True when prerequisites are satisfied, false otherwise.
+ */
 function plugin_archisw_check_prerequisites() {
    global $DB;
 		$query = "select * from glpi_plugins where directory = 'statecheck' and state = 1";
@@ -169,7 +185,11 @@ function plugin_archisw_check_prerequisites() {
 		}
 }
 
-// Uninstall process for plugin : need to return true if succeeded : may display messages or add to message after redirect
+/**
+ * Verify the plugin configuration after activation.
+ *
+ * @return bool True if the configuration is valid.
+ */
 function plugin_archisw_check_config() {
    return true;
 }
@@ -179,7 +199,16 @@ function plugin_archisw_check_config() {
    return $types;
 }
 */
-// Uninstall process for plugin : need to return true if succeeded : may display messages or add to message after redirect
+/**
+ * Hook called before a PluginArchiswConfigsw record is added.
+ *
+ * Alters the swcomponents table to ADD the new DB column (and an index when the
+ * field is a dropdown) that corresponds to the newly configured field.
+ *
+ * @param CommonDBTM $item The ConfigSw item being added.
+ *
+ * @return bool True on success, false when the DB field type cannot be loaded.
+ */
 function hook_pre_item_add_archisw_configsw(CommonDBTM $item) {
    global $DB;
    $fieldname = $item->fields['name'];
@@ -195,6 +224,16 @@ function hook_pre_item_add_archisw_configsw(CommonDBTM $item) {
    }
    return false;
 }
+/**
+ * Hook called before a PluginArchiswConfigsw record is updated.
+ *
+ * Issues an ALTER TABLE CHANGE (when the column is renamed) or MODIFY on the
+ * swcomponents table to reflect the updated field definition.
+ *
+ * @param CommonDBTM $item The ConfigSw item being updated.
+ *
+ * @return bool True on success, false when the DB field type cannot be loaded.
+ */
 function hook_pre_item_update_archisw_configsw(CommonDBTM $item) {
    global $DB;
    $oldfieldname = $item->fields['name'];
@@ -215,6 +254,16 @@ function hook_pre_item_update_archisw_configsw(CommonDBTM $item) {
    }
    return false;
 }
+/**
+ * Hook called before a PluginArchiswConfigsw record is permanently deleted.
+ *
+ * Removes the matching label translations and drops the corresponding column
+ * from the swcomponents table.
+ *
+ * @param CommonDBTM $item The ConfigSw item being purged.
+ *
+ * @return bool Always returns true.
+ */
 function hook_pre_item_purge_archisw_configsw(CommonDBTM $item) {
    global $DB;
    $oldid = $item->fields['id'];

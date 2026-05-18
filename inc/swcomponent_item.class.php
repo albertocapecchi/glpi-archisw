@@ -28,6 +28,16 @@ if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Many-to-many relation between a SwComponent and any GLPI item type.
+ *
+ * Stores which GLPI items (Computer, Project, Software, etc.) are associated
+ * with a given SwComponent, along with an optional role and comment for each
+ * association.  Implements CommonDBRelation so GLPI handles standard CRUD and
+ * entity scoping automatically.
+ *
+ * @package archisw
+ */
 class PluginArchiswSwcomponent_Item extends CommonDBRelation {
 
    // From CommonDBRelation
@@ -124,6 +134,13 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
       return true;
    }
 
+   /**
+    * Count the SwComponent–item links for a given SwComponent.
+    *
+    * @param PluginArchiswSwcomponent $item The SwComponent instance.
+    *
+    * @return int Number of linked items.
+    */
    static function countForSwcomponent(PluginArchiswSwcomponent $item) {
 
       $types = $item->getTypes();
@@ -138,6 +155,13 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
    }
 
 
+   /**
+    * Count the SwComponent–item links for a given GLPI item.
+    *
+    * @param CommonDBTM $item The item whose links are counted.
+    *
+    * @return int Number of linked SwComponents.
+    */
    static function countForItem(CommonDBTM $item) {
 
       $dbu = new DbUtils();
@@ -146,6 +170,15 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
                                          "items_id" => $item->getID()]);
    }
 
+   /**
+    * Load a relation record by SwComponent ID and associated item.
+    *
+    * @param int    $plugin_archisw_swcomponents_id SwComponent record ID.
+    * @param int    $items_id                       Associated item ID.
+    * @param string $itemtype                       Associated item type class name.
+    *
+    * @return bool True on success, false when the record was not found.
+    */
    function getFromDBbySwcomponentsAndItem($plugin_archisw_swcomponents_id, $items_id, $itemtype) {
       global $DB;
 
@@ -167,12 +200,28 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
       return false;
    }
 
+   /**
+    * Add a link record, stripping the last two elements from $values.
+    *
+    * @param array $values Field values; the last two elements are discarded.
+    *
+    * @return void
+    */
    function addItem($values) {
 
       $this->add(array_slice($values, 0, -2));
 
    }
 
+   /**
+    * Delete the relation record identified by SwComponent ID and associated item.
+    *
+    * @param int    $plugin_archisw_swcomponents_id SwComponent record ID.
+    * @param int    $items_id                       Associated item ID.
+    * @param string $itemtype                       Associated item type class name.
+    *
+    * @return void
+    */
    function deleteItemBySwcomponentsAndItem($plugin_archisw_swcomponents_id,$items_id,$itemtype) {
 
       if ($this->getFromDBbySwcomponentsAndItem($plugin_archisw_swcomponents_id,$items_id,$itemtype)) {
@@ -181,8 +230,15 @@ class PluginArchiswSwcomponent_Item extends CommonDBRelation {
    }
 
    /**
+    * Return massive actions that are forbidden for this relation class.
+    *
+    * The "update" action is blocked because relation records are not directly
+    * editable via massive actions.
+    *
+    * @return array List of forbidden action keys.
+    *
     * @since version 0.84
-   **/
+    */
    function getForbiddenStandardMassiveAction() {
 
       $forbidden   = parent::getForbiddenStandardMassiveAction();

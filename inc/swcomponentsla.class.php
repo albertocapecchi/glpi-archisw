@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * SLA reference for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown linking a software component to a Service
+ * Level Agreement entry.
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentSla extends CommonDropdown {
       }
       ?>

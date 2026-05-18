@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Standards that can be linked to a SwComponent.
+ *
+ * A simple GLPI CommonDropdown list of regulatory or technical standards
+ * (e.g. ISO, NIST) applicable to software components.
+ *
+ * @package archisw
+ */
       class PluginArchiswStandard extends CommonDropdown {
       }
       ?>

@@ -28,15 +28,41 @@ if (!defined('GLPI_ROOT')) {
 	die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Link-class reference for dropdown and tree-dropdown configuration fields.
+ *
+ * Stores metadata about which external or plugin-generated class backs a
+ * PluginArchiswConfigsw field of type Dropdown (6) or TreeDropdown (9).
+ * When the class name starts with "PluginArchisw", a backing DB table/view and
+ * PHP class files are generated automatically.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigswLink extends CommonDropdown {
 
    static $rightname = "plugin_archisw_configuration";
    var $can_be_translated  = true;
    
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return _n('Link class','Link classes',$nb);
    }
+
+   /**
+    * Return additional form fields for the dropdown management screen.
+    *
+    * Adds has_dropdown, is_entity_limited, is_tree_dropdown, as_view_on, and
+    * viewlimit fields.
+    *
+    * @return array Field definition arrays understood by CommonDropdown.
+    */
    public function getAdditionalFields() {
       return [
             [
@@ -71,6 +97,13 @@ class PluginArchiswConfigswLink extends CommonDropdown {
             ]
 		];
    }
+   /**
+    * Return the search options for the ConfigSwLink management list.
+    *
+    * Extends standard CommonDropdown options with link-specific fields.
+    *
+    * @return array Search option entries.
+    */
    function getSearchOptions() {
 	  $opt = CommonDropdown::getSearchOptions();
 //      $sopt['common'] = __("App structures", "archisw");

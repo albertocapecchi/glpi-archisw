@@ -27,10 +27,27 @@ if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Profile and rights management for the Archisw plugin.
+ *
+ * Extends GLPI's Profile class to add plugin-specific rights
+ * (plugin_archisw, plugin_archisw_configuration, plugin_archisw_open_ticket)
+ * and handles migration from the legacy rights table.
+ *
+ * @package archisw
+ */
 class PluginArchiswProfile extends Profile {
 
    static $rightname = "profile";
 
+   /**
+    * Return the tab label shown on the Profile form.
+    *
+    * @param CommonGLPI $item         The item whose tabs are being rendered.
+    * @param int        $withtemplate Whether a template is being edited (default 0).
+    *
+    * @return string Tab label, or empty string when not applicable.
+    */
    function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
 
       if ($item->getType()=='Profile') {
@@ -40,6 +57,15 @@ class PluginArchiswProfile extends Profile {
    }
 
 
+   /**
+    * Render the plugin rights tab content within the Profile form.
+    *
+    * @param CommonGLPI $item         The Profile item being displayed.
+    * @param int        $tabnum       Tab number (default 1).
+    * @param int        $withtemplate Whether a template is being edited (default 0).
+    *
+    * @return bool Always returns true.
+    */
    static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
 
       if ($item->getType()=='Profile') {
@@ -54,6 +80,13 @@ class PluginArchiswProfile extends Profile {
       return true;
    }
 
+   /**
+    * Grant full rights on the plugin to the first (super-admin) profile.
+    *
+    * @param int $ID Profile ID to which rights are granted.
+    *
+    * @return void
+    */
    static function createFirstAccess($ID) {
       //85
       self::addDefaultProfileInfos($ID,
@@ -93,13 +126,14 @@ class PluginArchiswProfile extends Profile {
 
 
    /**
-    * Show profile form
+    * Render the plugin rights form inside the Profile edit page.
     *
-    * @param $items_id integer id of the profile
-    * @param $target value url of target
+    * @param int  $profiles_id Profile record ID (default 0).
+    * @param bool $openform    Whether to output the opening <form> tag (default true).
+    * @param bool $closeform   Whether to output the closing form/submit markup (default true).
     *
-    * @return nothing
-    **/
+    * @return void
+    */
    function showForm($profiles_id=0, $openform=TRUE, $closeform=TRUE) {
 
       echo "<div class='firstbloc'>";
@@ -140,6 +174,13 @@ class PluginArchiswProfile extends Profile {
       echo "</div>";
    }
 
+   /**
+    * Return all plugin right definitions.
+    *
+    * @param bool $all When true, also include the open_ticket right (default false).
+    *
+    * @return array Array of right definition arrays.
+    */
    static function getAllRights($all = false) {
       $rights = [
           ['itemtype'  => 'PluginArchiswSwcomponent',
@@ -162,10 +203,12 @@ class PluginArchiswProfile extends Profile {
    }
 
    /**
-    * Init profiles
+    * Translate a legacy right string to the new GLPI constant.
     *
-    **/
-
+    * @param string $old_right Legacy right value ('r', 'w', '0', '1', or '').
+    *
+    * @return int GLPI right constant.
+    */
    static function translateARight($old_right) {
       switch ($old_right) {
          case '':
@@ -184,10 +227,14 @@ class PluginArchiswProfile extends Profile {
    }
 
    /**
-   * @since 0.85
-   * Migration rights from old system to the new one for one profile
-   * @param $profiles_id the profile ID
-   */
+    * Migrate rights from the legacy table to the new ProfileRight system for one profile.
+    *
+    * @param int $profiles_id The profile ID to migrate.
+    *
+    * @return bool True when the legacy table does not exist (nothing to migrate).
+    *
+    * @since 0.85
+    */
    static function migrateOneProfile($profiles_id) {
       global $DB;
       //Cannot launch migration if there's nothing to migrate...
@@ -213,8 +260,13 @@ class PluginArchiswProfile extends Profile {
    }
 
    /**
-   * Initialize profiles, and migrate it necessary
-   */
+    * Initialise plugin rights for all profiles and migrate legacy rights.
+    *
+    * Ensures glpi_profilerights rows exist for every plugin right field,
+    * then runs migrateOneProfile() for each existing profile.
+    *
+    * @return void
+    */
    static function initProfile() {
       global $DB;
       $profile = new self();
@@ -243,6 +295,13 @@ class PluginArchiswProfile extends Profile {
    }
 
 
+   /**
+    * Remove all plugin rights from the current session.
+    *
+    * Called during plugin uninstall to clean up the session immediately.
+    *
+    * @return void
+    */
    static function removeRightsFromSession() {
       foreach (self::getAllRights(true) as $right) {
          if (isset($_SESSION['glpiactiveprofile'][$right['field']])) {

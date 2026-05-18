@@ -28,11 +28,27 @@ if (!defined('GLPI_ROOT')) {
 	die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Data type options for SwComponent custom fields.
+ *
+ * A read-only GLPI dropdown whose values (Text, Boolean, Date, DateTime,
+ * Number, Dropdown, Itemlink, Textarea, TreeDropdown) are seeded by the
+ * install SQL and determine how a configured field is rendered and searched.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigswDatatype extends CommonDropdown {
 
    static $rightname = "plugin_archisw_configuration";
    var $can_be_translated  = true;
    
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return _n('Search datatype','Search datatypes',$nb);

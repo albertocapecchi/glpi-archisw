@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Database reference for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown linking a software component to a database
+ * entry (e.g. a GLPI Database object or a free-text DB name).
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentDb extends CommonDropdown {
       }
       ?>

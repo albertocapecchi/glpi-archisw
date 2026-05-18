@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * User role reference for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown for business user roles or teams associated
+ * with a software component.
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentUser extends CommonDropdown {
       }
       ?>

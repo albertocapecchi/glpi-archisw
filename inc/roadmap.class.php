@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Roadmap items for SwComponents (hierarchical tree).
+ *
+ * A GLPI CommonTreeDropdown-backed list of roadmap milestones or phases
+ * that can be associated with a SwComponent.
+ *
+ * @package archisw
+ */
       class PluginArchiswRoadmap extends CommonTreeDropdown {
       }
       ?>

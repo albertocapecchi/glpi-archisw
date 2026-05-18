@@ -25,6 +25,15 @@
  --------------------------------------------------------------------------
  */
 
+/**
+ * Label translations for PluginArchiswConfigsw field descriptions.
+ *
+ * Stores per-language label overrides for custom SwComponent fields.
+ * The default language (en_GB) uses the description stored directly in the
+ * ConfigSw record; all other languages use a translation record here.
+ *
+ * @package archisw
+ */
 class PluginArchiswLabelTranslation extends CommonDBChild
 {
     use Glpi\Features\Clonable;

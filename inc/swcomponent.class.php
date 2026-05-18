@@ -28,6 +28,17 @@ if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Hierarchical software component (application structure node).
+ *
+ * Extends CommonTreeDropdown to provide a multi-level tree of software
+ * application components.  Custom fields are driven by PluginArchiswConfigsw
+ * records stored in the database, making the form and search options fully
+ * dynamic.  Supports associations to GLPI items (Computer, Project, etc.)
+ * via PluginArchiswSwcomponent_Item and appears in the GLPI Assets menu.
+ *
+ * @package archisw
+ */
 class PluginArchiswSwcomponent extends CommonTreeDropdown {
 
    public 	 $dohistory  = true;
@@ -37,8 +48,12 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
    static $types = ['Computer', 'Project', 'ProjectTask', 'User', 'Software', 'SoftwareLicense', 'Group', 'Entity', 'Contract', 'Appliance', 'Printer', 'NetworkEquipment', 'Certificate', 'Database'];
 
    /**
-    * @since version 0.84
-   **/
+    * Prepare the item for deletion: clean parent/son caches.
+    *
+    * Prevents deletion of the root node (id = 0).
+    *
+    * @return bool False when trying to delete the root node, true otherwise.
+    */
    function pre_deleteItem() {
       global $GLPI_CACHE;
 
@@ -55,11 +70,26 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
       return true;
    }
 
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return _n('Apps Structure', 'Apps Structures', $nb, 'archisw');
    }
 
+   /**
+    * Return the tab label shown on other items (Supplier, SwComponent).
+    *
+    * @param CommonGLPI $item         The item whose tabs are being rendered.
+    * @param int        $withtemplate Whether a template is being edited (default 0).
+    *
+    * @return string Tab label, or empty string when this tab is not applicable.
+    */
    function getTabNameForItem(CommonGLPI $item, $withtemplate=0) {
 	   switch ($item->getType()) {
 			case 'Supplier' :
@@ -74,6 +104,18 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
    }
 
 
+   /**
+    * Render the content of a tab for an item.
+    *
+    * Dispatches to showPluginFromSupplier() for Supplier items and showChildren()
+    * for SwComponent items.
+    *
+    * @param CommonGLPI $item         The item whose tab is being rendered.
+    * @param int        $tabnum       Tab number (default 1).
+    * @param int        $withtemplate Whether a template is being edited (default 0).
+    *
+    * @return bool Always returns true.
+    */
    static function displayTabContentForItem(CommonGLPI $item, $tabnum=1, $withtemplate=0) {
 
       switch ($item->getType()) {
@@ -88,6 +130,13 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
       return true;
    }
 
+   /**
+    * Count the number of SwComponents linked to a given Supplier.
+    *
+    * @param CommonDBTM $item The Supplier item.
+    *
+    * @return int Number of linked SwComponents.
+    */
    static function countForItem(CommonDBTM $item) {
 
       $dbu = new DbUtils();
@@ -95,13 +144,23 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
                                   ['suppliers_id' => $item->getID()]);
    }
 
-   //clean if swcomponent are deleted
+   /** Clean linked SwComponent_Item records when a SwComponent is purged. */
    function cleanDBonPurge() {
 
 //      $temp = new PluginArchiswSwcomponent_Item();
 //      $temp->deleteByCriteria(['plugin_archisw_swcomponents_id' => $this->fields['id']));
    }
 
+   /**
+    * Build the dynamic search options for this item type.
+    *
+    * Generates search option entries from the statically defined fields plus
+    * all active PluginArchiswConfigsw rows stored in the database.  Dropdown
+    * and TreeDropdown types reference their linked class tables; other types map
+    * directly to the swcomponents table.
+    *
+    * @return array Array of search option entries.
+    */
    // search fields from GLPI 9.3 on
    function rawSearchOptions() {
       global $DB, $CFG_GLPI;
@@ -294,6 +353,13 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
       return $tab;
    }
 
+   /**
+    * Define the tabs shown on the SwComponent form.
+    *
+    * @param array $options Display options passed down from CommonGLPI.
+    *
+    * @return array Ordered tab definitions.
+    */
    //define header form
    function defineTabs($options=[]) {
 
@@ -324,6 +390,18 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
               WHERE `plugin_archisw_swcomponents_id`='" . $this->fields['id']."'";
    }
 */
+   /**
+    * Render the main edit/create form for a SwComponent.
+    *
+    * Outputs a dynamic HTML table where each row and column is determined by
+    * the PluginArchiswConfigsw configuration.  Fields without a field-group
+    * appear at the top; grouped fields are rendered inside Bootstrap accordions.
+    *
+    * @param int   $ID      Record ID (-1 for a new item).
+    * @param array $options Display options.
+    *
+    * @return bool Always returns true.
+    */
    function showForm ($ID, $options=[]) {
 
       global $DB, $CFG_GLPI;
@@ -597,6 +675,19 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
       return true;
    }
 
+   /**
+    * Render a single configured field inside the SwComponent form.
+    *
+    * Dispatches on the data type id stored in $fielddata:
+    *   1 = Text, 2 = Boolean, 3 = Date, 4 = DateTime, 5 = Number,
+    *   6 = Dropdown, 7 = Itemlink, 8 = Textarea, 9 = TreeDropdown.
+    *
+    * @param array $fielddata Field configuration row from glpi_plugin_archisw_configsws.
+    * @param int   $colspan   HTML colspan for the value cell (default 1).
+    * @param array $linktable Pre-fetched ConfigSwLink rows keyed by id.
+    *
+    * @return void
+    */
    function displayField($fielddata, $colspan = 1, $linktable=[]) {
       $fieldname = $fielddata['name'];
       $fielddescription = $_SESSION['glpilanguage']=="en_GB"?__($fielddata['description'], 'archisw'):PluginArchiswLabelTranslation::getLabelFor($fielddata); // if current language = en_GB, get default description
@@ -815,6 +906,17 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
    }
 
 
+   /**
+    * Display SwComponents linked to a given Supplier.
+    *
+    * Outputs an HTML table listing all non-deleted SwComponents whose
+    * suppliers_id matches the given ID.
+    *
+    * @param int    $ID           Supplier record ID.
+    * @param string $withtemplate Template flag (default '').
+    *
+    * @return void
+    */
    function showPluginFromSupplier($ID,$withtemplate='') {
       global $DB,$CFG_GLPI;
 
@@ -875,10 +977,17 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
    }
    
    /**
-    * @since version 0.85
+    * Return the massive actions available for this item type.
     *
-    * @see CommonDBTM::getSpecificMassiveActions()
-   **/
+    * Adds Associate, Dissociate, Duplicate, and Transfer actions when the
+    * current user has update rights.
+    *
+    * @param CommonDBTM|null $checkitem Item used for right checks (default null).
+    *
+    * @return array Associative array of action key => label.
+    *
+    * @since version 0.85
+    */
    function getSpecificMassiveActions($checkitem=NULL) {
       $isadmin = static::canUpdate();
       $actions = parent::getSpecificMassiveActions($checkitem);
@@ -900,10 +1009,14 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
    }
    
    /**
-    * @since version 0.85
+    * Render the sub-form HTML for the currently selected massive action.
     *
-    * @see CommonDBTM::showMassiveActionsSubForm()
-   **/
+    * @param MassiveAction $ma The active MassiveAction instance.
+    *
+    * @return bool True when a sub-form was rendered, otherwise delegates to parent.
+    *
+    * @since version 0.85
+    */
    static function showMassiveActionsSubForm(MassiveAction $ma) {
 
       switch ($ma->getAction()) {
@@ -954,10 +1067,19 @@ class PluginArchiswSwcomponent extends CommonTreeDropdown {
    
    
    /**
-    * @since version 0.85
+    * Process a massive action for one item type.
     *
-    * @see CommonDBTM::processMassiveActionsForOneItemtype()
-   **/
+    * Handles plugin_archisw_add_item, transfer, install, uninstall, and
+    * duplicate actions; delegates unknown actions to the parent implementation.
+    *
+    * @param MassiveAction $ma   The active MassiveAction instance.
+    * @param CommonDBTM    $item The item type being acted upon.
+    * @param array         $ids  Array of record IDs selected for the action.
+    *
+    * @return void
+    *
+    * @since version 0.85
+    */
    static function processMassiveActionsForOneItemtype(MassiveAction $ma, CommonDBTM $item,
                                                        array $ids) {
       global $DB;

@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Technical referent for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown listing technical roles or teams responsible
+ * for a software component.
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentTechnic extends CommonDropdown {
       }
       ?>

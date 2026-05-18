@@ -23,13 +23,31 @@
  along with Archisw. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
+/**
+ * GLPI Configuration menu entry for the Archisw plugin.
+ *
+ * Registers the "Apps structures configuration" entry under the GLPI Config
+ * menu and provides search/add links to the ConfigSw front-end pages.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigswMenu extends CommonGLPI {
    static $rightname = 'plugin_archisw_configuration';
 
+   /**
+    * Return the localised configuration menu name.
+    *
+    * @return string Translated menu title.
+    */
    static function getMenuName() {
       return _n('Apps structure configuration', 'Apps structures configuration', 2, 'archisw');
    }
 
+   /**
+    * Build and return the menu descriptor array for the Config section.
+    *
+    * @return array GLPI menu descriptor with title, page, links, and icon.
+    */
    static function getMenuContent() {
       global $CFG_GLPI;
 
@@ -45,10 +63,22 @@ class PluginArchiswConfigswMenu extends CommonGLPI {
 		return $menu;
 	}
 
+	/**
+	 * Return the Font Awesome icon class for this configuration menu entry.
+	 *
+	 * @return string CSS class string.
+	 */
 	static function getIcon() {
 		return "fas fa-cog";
 	}
 
+   /**
+    * Remove the configuration menu entry from the current session cache.
+    *
+    * Called during plugin uninstall to clean up the session immediately.
+    *
+    * @return void
+    */
    static function removeRightsFromSession() {
       if (isset($_SESSION['glpimenu']['configsw']['types']['PluginArchiswConfigswMenu'])) {
          unset($_SESSION['glpimenu']['configsw']['types']['PluginArchiswConfigswMenu']); 

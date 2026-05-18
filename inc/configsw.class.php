@@ -28,17 +28,38 @@ if (!defined('GLPI_ROOT')) {
    die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Custom field configuration for SwComponent.
+ *
+ * Each record describes one configurable field that is dynamically added to
+ * the SwComponent form and search options.  The field's DB column is managed
+ * automatically by the hook functions in hook.php / setup.php.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigsw extends CommonDBTM {
 
    public $dohistory=true;
    static $rightname = "plugin_archisw_configuration";
    protected $usenotepad         = true;
    
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return __('Apps Config', 'archisw');
    }
 
+   /**
+    * Build the search options for the ConfigSw management list.
+    *
+    * @return array Array of search option entries.
+    */
    // search fields from GLPI 9.3 on
    function rawSearchOptions() {
 
@@ -159,6 +180,13 @@ class PluginArchiswConfigsw extends CommonDBTM {
       return $tab;
    }
 
+   /**
+    * Define the tabs shown on the ConfigSw form.
+    *
+    * @param array $options Display options passed down from CommonGLPI.
+    *
+    * @return array Ordered tab definitions.
+    */
    //define header form
    function defineTabs($options=[]) {
 
@@ -170,6 +198,14 @@ class PluginArchiswConfigsw extends CommonDBTM {
       return $ong;
    }
 
+   /**
+    * Render the edit/create form for a ConfigSw record.
+    *
+    * @param int   $ID      Record ID (-1 for a new item).
+    * @param array $options Display options.
+    *
+    * @return bool Always returns true.
+    */
    function showForm ($ID, $options=[]) {
 
       $this->initForm($ID, $options);

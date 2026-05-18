@@ -24,13 +24,31 @@
  --------------------------------------------------------------------------
  */
  
+/**
+ * GLPI Assets menu entry for the Archisw plugin.
+ *
+ * Registers the "Apps structures" entry under the GLPI Assets menu and
+ * provides search/add links to the SwComponent front-end pages.
+ *
+ * @package archisw
+ */
 class PluginArchiswMenu extends CommonGLPI {
    static $rightname = 'plugin_archisw';
 
+   /**
+    * Return the localised menu name.
+    *
+    * @return string Translated menu title.
+    */
    static function getMenuName() {
       return _n('Apps structure', 'Apps structures', 2, 'archisw');
    }
 
+   /**
+    * Build and return the menu descriptor array for the Assets section.
+    *
+    * @return array GLPI menu descriptor with title, page, links, and icon.
+    */
    static function getMenuContent() {
       global $CFG_GLPI;
 
@@ -46,10 +64,27 @@ class PluginArchiswMenu extends CommonGLPI {
       return $menu;
    }
 
+   /**
+    * Return the Font Awesome icon class for this menu entry.
+    *
+    * @return string CSS class string.
+    */
+   /**
+    * Return the Font Awesome icon class for this menu entry.
+    *
+    * @return string CSS class string.
+    */
    static function getIcon() {
       return "fas fa-cog";
    }
 
+   /**
+    * Remove this menu entry from the current session cache.
+    *
+    * Called during plugin uninstall to clean up the session immediately.
+    *
+    * @return void
+    */
    static function removeRightsFromSession() {
       if (isset($_SESSION['glpimenu']['assets']['types']['PluginArchiswMenu'])) {
          unset($_SESSION['glpimenu']['assets']['types']['PluginArchiswMenu']); 

@@ -28,16 +28,39 @@ if (!defined('GLPI_ROOT')) {
 	die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Field group (accordion section) for organising SwComponent form fields.
+ *
+ * Records in this dropdown define named sections shown as collapsible Bootstrap
+ * accordions in the SwComponent edit form.  A sort order and default visibility
+ * flag control the display order and initial open/closed state.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigswFieldgroup extends CommonDropdown {
 
    static $rightname = "plugin_archisw_configuration";
    var $can_be_translated  = true;
    
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return _n('Field group','Field groups',$nb);
    }
    
+   /**
+    * Return additional form fields for the field-group management screen.
+    *
+    * Adds a sortorder text field and an is_visible boolean field.
+    *
+    * @return array Field definition arrays understood by CommonDropdown.
+    */
    public function getAdditionalFields() {
       return [
             [
@@ -55,6 +78,13 @@ class PluginArchiswConfigswFieldgroup extends CommonDropdown {
 		];
    }
    
+   /**
+    * Return the search options for the field-group management list.
+    *
+    * Extends standard CommonDropdown options with sortorder and is_visible fields.
+    *
+    * @return array Search option entries.
+    */
    function rawSearchOptions() {
 	  $opt = CommonDropdown::rawSearchOptions();
 //      $sopt['common'] = __("App structures", "archisw");

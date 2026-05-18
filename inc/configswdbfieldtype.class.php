@@ -28,11 +28,26 @@ if (!defined('GLPI_ROOT')) {
 	die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Database field type options for SwComponent custom fields.
+ *
+ * Stores the MySQL column type string (e.g. "VARCHAR(255)", "INT", "DATE")
+ * used when ALTERing the swcomponents table to add or modify a configured field.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigswDbfieldtype extends CommonDropdown {
 
    static $rightname = "plugin_archisw_configuration";
    var $can_be_translated  = true;
    
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return _n('DB field type','DB field types',$nb);

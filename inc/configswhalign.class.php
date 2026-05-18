@@ -28,11 +28,27 @@ if (!defined('GLPI_ROOT')) {
 	die("Sorry. You can't access directly to this file");
 }
 
+/**
+ * Horizontal alignment options for SwComponent form fields.
+ *
+ * Seeded dropdown whose values (Full row, Left, Left+Center, Center,
+ * Center+Right, Right, Straddling 2) control the colspan and position of a
+ * configured field within the SwComponent edit form table.
+ *
+ * @package archisw
+ */
 class PluginArchiswConfigswHalign extends CommonDropdown {
 
    static $rightname = "plugin_archisw_configuration";
    var $can_be_translated  = true;
    
+   /**
+    * Return the localised type name for this class.
+    *
+    * @param int $nb Number of items (used for pluralisation).
+    *
+    * @return string Translated type name.
+    */
    static function getTypeName($nb=0) {
 
       return _n('Horizontal alignment','Horizontal alignments',$nb);

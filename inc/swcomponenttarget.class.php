@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Target environment for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown describing where a software component is
+ * deployed (e.g. "On-premises", "Cloud", "Hybrid").
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentTarget extends CommonDropdown {
       }
       ?>

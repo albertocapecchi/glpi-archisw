@@ -24,6 +24,16 @@
  --------------------------------------------------------------------------
  */
 
+/**
+ * Install or upgrade all Archisw database tables.
+ *
+ * Runs SQL migration scripts in sequence based on table/column presence so the
+ * database schema is always brought to the latest version.  Also re-generates
+ * PHP class files for every configured dropdown link and initialises plugin
+ * rights for the current profile.
+ *
+ * @return bool Always returns true.
+ */
 function plugin_archisw_install() {
    global $DB;
    include_once (Plugin::getPhpDir("archisw")."/inc/profile.class.php");
@@ -98,6 +108,14 @@ function plugin_archisw_install() {
    return true;
 }
 
+/**
+ * Uninstall the Archisw plugin.
+ *
+ * Drops all plugin tables and views, removes statecheck rules, cleans up GLPI
+ * core tables (logs, documents, tickets, etc.) and revokes plugin profile rights.
+ *
+ * @return bool Always returns true.
+ */
 function plugin_archisw_uninstall() {
    global $DB;
    
@@ -192,6 +210,12 @@ function plugin_archisw_uninstall() {
    return true;
 }
 
+/**
+ * Post-init hook: register item_purge callbacks and standard tabs for all
+ * linkable item types once every plugin class has been loaded.
+ *
+ * @return void
+ */
 function plugin_archisw_postinit() {
    global $PLUGIN_HOOKS;
 
@@ -206,6 +230,13 @@ function plugin_archisw_postinit() {
    }
 }
 
+/**
+ * Add PluginArchiswSwcomponent to the list of types associable to a ticket.
+ *
+ * @param array $types Existing associable item types.
+ *
+ * @return array Updated associable item types.
+ */
 function plugin_archisw_AssignToTicket($types) {
 
    if (Session::haveRight("plugin_archisw_open_ticket", "1")) {
@@ -214,7 +245,14 @@ function plugin_archisw_AssignToTicket($types) {
    return $types;
 }
 
-// Define dropdown relations
+/**
+ * Return the set of foreign-key relations between Archisw tables.
+ *
+ * Used by the statecheck plugin to understand table relationships.
+ *
+ * @return array Nested array mapping parent tables to child table/field pairs,
+ *               or an empty array when the plugin is not active.
+ */
 function plugin_archisw_getSwcomponentRelations() {
    global $DB;
 
@@ -242,7 +280,15 @@ function plugin_archisw_getSwcomponentRelations() {
       return [];
 }
 
-// Define Dropdown tables to be manage in GLPI :
+/**
+ * Return the list of GLPI dropdown classes provided by the plugin.
+ *
+ * Includes both built-in classes and dynamically configured ConfigSwLink classes
+ * that have their own tables (i.e. not mapped to a view on another table).
+ *
+ * @return array Associative array of classname => display label, or empty array
+ *               when the plugin is not active.
+ */
 function plugin_archisw_getDropdown() {
    global $DB;
 
@@ -278,6 +324,13 @@ function plugin_archisw_getDropdown() {
 
 ////// SEARCH FUNCTIONS ///////() {
 
+/**
+ * Inject additional search options for item types that can be linked to a SwComponent.
+ *
+ * @param string $itemtype The GLPI item type being searched.
+ *
+ * @return array Array of extra search option entries.
+ */
 function plugin_archisw_getAddSearchOptions($itemtype) {
 
    $sopt=[];
@@ -314,6 +367,18 @@ function plugin_archisw_getAddSearchOptions($itemtype) {
    return $sopt;
 }
 
+/**
+ * Customise the HTML output for specific search-result columns.
+ *
+ * Handles the rendering of linked items and swcomponent names in search results.
+ *
+ * @param string $type  The item type being displayed.
+ * @param int    $ID    The search option ID.
+ * @param array  $data  The raw search result row.
+ * @param int    $num   The column index.
+ *
+ * @return string HTML fragment, or empty string when no custom rendering applies.
+ */
 function plugin_archisw_giveItem($type,$ID,$data,$num) {
    global $DB;
    $searchopt =& Search::getOptions($type);
@@ -397,8 +462,16 @@ function plugin_archisw_giveItem($type,$ID,$data,$num) {
    return "";
 }
 
-////// SPECIFIC MODIF MASSIVE FUNCTIONS ///////
-
+/**
+ * Return the massive-action entries available for the given item type.
+ *
+ * Adds an "Associate to the Apps Structure" action for all types that can be
+ * linked to a SwComponent.
+ *
+ * @param string $type The item type.
+ *
+ * @return array Associative array of action key => label.
+ */
 function plugin_archisw_MassiveActions($type) {
 
     $plugin = new Plugin();
@@ -457,11 +530,27 @@ function plugin_archisw_MassiveActionsProcess($data) {
    return $res;
 }
 */
+/**
+ * Register the PluginArchiswSwcomponentInjection class as an injectable type
+ * for the Data Injection plugin.
+ *
+ * @return void
+ */
 function plugin_datainjection_populate_archisw() {
    global $INJECTABLE_TYPES;
    $INJECTABLE_TYPES['PluginArchiswSwcomponentInjection'] = 'datainjection';
 }
 
+/**
+ * Hook called before a PluginArchiswConfigswLink record is added.
+ *
+ * Creates the backing database table or SQL view and generates the PHP class
+ * files (inc/ and front/) for the new dropdown class.
+ *
+ * @param CommonDBTM $item The ConfigSwLink item being added.
+ *
+ * @return void
+ */
 function hook_pre_item_add_archisw_configswlink(CommonDBTM $item) {
    global $DB;
    $dir = Plugin::getPhpDir("archisw", true);
@@ -523,6 +612,16 @@ function hook_pre_item_add_archisw_configswlink(CommonDBTM $item) {
       create_plugin_archisw_classfiles($dir, $newclassname, $newistreedropdown);
    }
 }
+/**
+ * Hook called before a PluginArchiswConfigswLink record is updated.
+ *
+ * Renames or alters the backing table/view and regenerates the PHP class files
+ * as needed when the dropdown class name or its properties change.
+ *
+ * @param CommonDBTM $item The ConfigSwLink item being updated.
+ *
+ * @return void
+ */
 function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
    global $DB;
    $dir = Plugin::getPhpDir("archisw", true);
@@ -677,6 +776,16 @@ function hook_pre_item_update_archisw_configswlink(CommonDBTM $item) {
          unlink($dir.'/front/'.$oldfilename.'.php');
    }
 }
+/**
+ * Hook called before a PluginArchiswConfigswLink record is permanently deleted.
+ *
+ * Drops the backing database table or view and removes the generated PHP class
+ * files (inc/ and front/) for the deleted dropdown class.
+ *
+ * @param CommonDBTM $item The ConfigSwLink item being purged.
+ *
+ * @return bool Always returns true.
+ */
 function hook_pre_item_purge_archisw_configswlink(CommonDBTM $item) {
    global $DB;
    $dir = Plugin::getPhpDir("archisw", true);
@@ -704,6 +813,21 @@ function hook_pre_item_purge_archisw_configswlink(CommonDBTM $item) {
    }
    return true;
 }
+/**
+ * Generate the PHP class, form, and list files for a dynamically configured
+ * PluginArchisw* dropdown class.
+ *
+ * Writes three files under the plugin's inc/ and front/ directories:
+ *   - inc/<name>.class.php  : minimal class extending CommonDropdown or CommonTreeDropdown
+ *   - front/<name>.form.php : dropdown form front-end
+ *   - front/<name>.php      : dropdown list front-end
+ *
+ * @param string $dir            Absolute filesystem path to the plugin root.
+ * @param string $newclassname   Full class name to generate (must start with "PluginArchisw").
+ * @param bool   $istreedropdown Whether to extend CommonTreeDropdown instead of CommonDropdown.
+ *
+ * @return bool Always returns true.
+ */
 function create_plugin_archisw_classfiles($dir, $newclassname, $istreedropdown = false) {
    if (substr($newclassname, 0, 13) == 'PluginArchisw') {
       $newfilename = strtolower(substr($newclassname, 13));

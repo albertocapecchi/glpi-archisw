@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Instance / environment for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown listing named deployment instances (e.g.
+ * "Production", "Staging", "Development") for a software component.
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentInstance extends CommonDropdown {
       }
       ?>

@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Software license type for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown for the license kind of a software component
+ * (e.g. "GPL", "MIT", "Proprietary").
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentLicense extends CommonDropdown {
       }
       ?>

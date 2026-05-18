@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Lifecycle state for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown for the operational state of a software
+ * component (e.g. "Production", "Development", "Retired").
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentState extends CommonDropdown {
       }
       ?>

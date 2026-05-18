@@ -26,6 +26,14 @@
       if (!defined('GLPI_ROOT')) {
          die('Sorry. You cannott access directly to this file');
       }
+/**
+ * Type classification for a SwComponent.
+ *
+ * A simple GLPI CommonDropdown used to categorise software components
+ * (e.g. "Application", "Service", "Library").
+ *
+ * @package archisw
+ */
       class PluginArchiswSwcomponentType extends CommonDropdown {
       }
       ?>

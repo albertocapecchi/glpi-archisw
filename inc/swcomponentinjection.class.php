@@ -29,15 +29,23 @@ if (!defined('GLPI_ROOT')) {
 }
 
 /**
- * Class PluginArchiswSwcomponentInjection
+ * Data Injection adapter for PluginArchiswSwcomponent.
+ *
+ * Implements PluginDatainjectionInjectionInterface so that SwComponent records
+ * can be imported via the GLPI Data Injection plugin.  Delegates storage to the
+ * parent PluginArchiswSwcomponent table through PluginDatainjectionCommonInjectionLib.
+ *
+ * @package archisw
  */
 class PluginArchiswSwcomponentInjection extends PluginArchiswSwcomponent
    implements PluginDatainjectionInjectionInterface {
 
    /**
-    * @param null $classname
+    * Return the DB table name for this class (delegates to the parent class).
     *
-    * @return mixed
+    * @param string|null $classname Unused; kept for interface compatibility.
+    *
+    * @return string Table name.
     */
    static function getTable($classname = null) {
 
@@ -47,23 +55,32 @@ class PluginArchiswSwcomponentInjection extends PluginArchiswSwcomponent
    }
 
    /**
-    * @return bool
+    * Indicate whether this is a primary injectable type.
+    *
+    * @return bool Always returns true.
     */
    function isPrimaryType() {
       return true;
    }
 
    /**
-    * @return array
+    * Return the list of item types this class can be connected to for injection.
+    *
+    * @return array Empty array (no connected types).
     */
    function connectedTo() {
       return [];
    }
 
    /**
-    * @param string $primary_type
+    * Return the injection options and field mappings for this type.
     *
-    * @return array
+    * Builds on the parent class search options and adds display-type hints and
+    * a list of non-importable fields for the Data Injection plugin.
+    *
+    * @param string $primary_type The primary item type being injected (default '').
+    *
+    * @return array Processed injection options array.
     */
    function getOptions($primary_type = '') {
 
@@ -87,15 +104,12 @@ class PluginArchiswSwcomponentInjection extends PluginArchiswSwcomponent
    }
 
    /**
-    * Standard method to delete an object into glpi
-    * WILL BE INTEGRATED INTO THE CORE IN 0.80
+    * Delete a SwComponent record via the Data Injection library.
     *
-    * @param array         $values
-    * @param array|options $options
+    * @param array $values  Field values identifying the record to delete.
+    * @param array $options Injection options.
     *
-    * @return an
-    * @internal param fields $fields to add into glpi
-    * @internal param options $options used during creation
+    * @return array Injection result array from PluginDatainjectionCommonInjectionLib.
     */
    function deleteObject($values = [], $options = []) {
       $lib = new PluginDatainjectionCommonInjectionLib($this, $values, $options);
@@ -104,15 +118,12 @@ class PluginArchiswSwcomponentInjection extends PluginArchiswSwcomponent
    }
 
    /**
-    * Standard method to add an object into glpi
-    * WILL BE INTEGRATED INTO THE CORE IN 0.80
+    * Add or update a SwComponent record via the Data Injection library.
     *
-    * @param array|fields  $values
-    * @param array|options $options
+    * @param array $values  Field values for the record to add or update.
+    * @param array $options Injection options.
     *
-    * @return an array of IDs of newly created objects : for example array(Computer=>1, Networkport=>10)
-    * @internal param fields $values to add into glpi
-    * @internal param options $options used during creation
+    * @return array Injection result array from PluginDatainjectionCommonInjectionLib.
     */
    function addOrUpdateObject($values = [], $options = []) {
       $lib = new PluginDatainjectionCommonInjectionLib($this, $values, $options);
