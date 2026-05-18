@@ -69,11 +69,6 @@ class PluginArchiswMenu extends CommonGLPI {
     *
     * @return string CSS class string.
     */
-   /**
-    * Return the Font Awesome icon class for this menu entry.
-    *
-    * @return string CSS class string.
-    */
    static function getIcon() {
       return "fas fa-cog";
    }

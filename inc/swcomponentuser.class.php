@@ -24,7 +24,7 @@
  --------------------------------------------------------------------------
  */
       if (!defined('GLPI_ROOT')) {
-         die('Sorry. You cannott access directly to this file');
+         die('Sorry. You cannot access directly to this file');
       }
 /**
  * User role reference for a SwComponent.

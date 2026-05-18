@@ -24,7 +24,7 @@
  --------------------------------------------------------------------------
  */
       if (!defined('GLPI_ROOT')) {
-         die('Sorry. You cannott access directly to this file');
+         die('Sorry. You cannot access directly to this file');
       }
 /**
  * Standards that can be linked to a SwComponent.
