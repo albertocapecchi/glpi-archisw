@@ -1,0 +1,11 @@
+{
+    "name": "ericferon/glpi-archisw",
+    "description": "GLPI plugin for application inventory",
+    "type": "glpi-plugin",
+    "license": "GPL-2.0-or-later",
+    "autoload": {
+        "psr-4": {
+            "GlpiPlugin\\Archisw\\": "src/"
+        }
+    }
+}
